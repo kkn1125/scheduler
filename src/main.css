@@ -1,0 +1,38 @@
+:root{
+    --jhb-font-com: 'Comfortaa', cursive;
+    --jhb-font-gugi: 'Gugi', cursive;
+    --jhb-font-sans: 'Noto Sans KR', sans-serif;
+}
+
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6{
+    font-family: var(--jhb-font-gugi);
+}
+
+.table>*>*>*:nth-child(1){
+    color: rgb(255, 130, 130);
+}
+.table>*>*>*:nth-child(7){
+    color: rgb(123, 123, 255);
+}
+
+td:hover{
+    background-color: rgb(245, 245, 245);
+}
+
+td{
+    cursor: pointer;
+    padding: .5rem !important;
+}
+
+[hidden]{
+    display: none !important;
+}
+
+[type="scd"]{
+    background-color: rgba(255, 170, 170, 0.308);
+}

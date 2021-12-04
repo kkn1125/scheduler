@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="preload" href="src/main.css" as="style">
+        </link>
+        <link rel="preload" href="src/main.js" as="script">
+        </link>
+        <link rel="preload"
+            href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;500;700&family=Gugi&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap"
+            as="style">
+        <link rel="preload" href="https://cdn.jsdelivr.net/gh/kkn1125/penli@vv013/docs/assets/css/penli.css"
+            integrity="sha384-9rdE3UnEE/uO/9YRo4rMRsBynA9KU3Pn8NQQNoHiCQD0EEXs6PPcf/LbvCxQ4vse" crossorigin="anonymous"
+            as="style">
+        <link rel="preload" href="https://cdn.jsdelivr.net/gh/kkn1125/penli@vv013/docs/assets/js/penli.js"
+            integrity="sha384-nsIRFRt8WvtPsJBMOSiAzsvqgVc0ViFiMC80JMDsPiz6LnNXgOzelTajC1MhBm41" crossorigin="anonymous"
+            as="script">
+        <link rel="preload" href="src/components.js" as="script">
+        <link rel="preload" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm" crossorigin="anonymous" as="style">
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;500;700&family=Gugi&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap"
+            rel="stylesheet">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kkn1125/penli@vv013/docs/assets/css/penli.css"
+            integrity="sha384-9rdE3UnEE/uO/9YRo4rMRsBynA9KU3Pn8NQQNoHiCQD0EEXs6PPcf/LbvCxQ4vse" crossorigin="anonymous">
+
+
+        <link rel="stylesheet" href="src/main.css">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm" crossorigin="anonymous">
+
+        <title>jhb scheduler</title>
+    </head>
+
+    <body>
+        <nav class="gnb position-sticky bg-light us-none gnb-info">
+            <div class="gnb-inner gnb-expand-md hide align-items-center">
+                <div class="brand fw-bold">
+                    <a href="index.html">Scheduler</a>
+                </div>
+                <div class="menu-btn">
+                    <button class="btn btn-light text-gray fs-4 me-3 px-2" data-target="#gnbMenu" style="line-height: 1;">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+                <ul id="gnbMenu" class="gnb-menu gx-2 w-flex hide col justify-content-md-end me-md-3 m-0">
+                    <li>
+                        <button id="login" class="btn btn-brand">login</button>
+                    </li>
+                    <li class="search btn-bundle g-0">
+                        <input type="text" class="form-input col">
+                        <button class="btn btn-info">
+                            찾기
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <main id="app" class="area-full">
+            <div>
+                <span class="h3">일정 관리</span>
+            </div>
+            <div class="area-full">
+                <div class="btn-bundle justify-content-center">
+                    <button id="prev" class="btn btn-info">이전</button>
+                    <select class="fs-6 form-select form-select-lg col" id="inputYear"></select>
+                    <select class="fs-6 form-select form-select-lg col" id="inputMonth"></select>
+                    <button id="next" class="btn btn-info">다음</button>
+                </div>
+            </div>
+            <div id="calendarView"></div>
+            <div><button id="now" class="btn btn-info">오늘로</button></div>
+            <div id="timeLine">
+                <div id="detail"></div>
+            </div>
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/gh/kkn1125/penli@vv013/docs/assets/js/penli.js"
+            integrity="sha384-nsIRFRt8WvtPsJBMOSiAzsvqgVc0ViFiMC80JMDsPiz6LnNXgOzelTajC1MhBm41" crossorigin="anonymous"
+            async></script>
+        <script src="src/components.js" async></script>
+        <script src="src/main.js" async></script>
+    </body>
+
+</html>
