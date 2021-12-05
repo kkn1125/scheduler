@@ -7,7 +7,7 @@
 // 12593 - 55203 한글
 
 const calendar = {
-    render: function(base, year, month, date){
+    render: function(base, year, month, date, userData){
         let days = ['일','월','화','수','목','금','토'];
 
         let lastDate = new Date(year, month+1, 0).getDate();
@@ -18,6 +18,8 @@ const calendar = {
         for(let i=0; i<startDay; i++) allDate.push('');
         for(let i=0; i<lastDate; i++) allDate.push(i+1);
 
+        
+
         return `<table class="table us-none" type="cal">
             <thead>
                 <tr>
@@ -27,9 +29,14 @@ const calendar = {
             <tbody class="text-center">
                 <tr>
                     ${allDate.map((x,i)=>{
+                        let tasks = null;
+                        if(userData && userData.task[year] && userData.task[year][month] && userData.task[year][month][x]){
+                            tasks = userData.task[year][month][x];
+                        }
+                        if(tasks) tasks = tasks.filter(todo=>!todo.done);
                         if(i%7==0){
-                            return `</tr><tr><td ${x==date?'class="text-subpoint"':''}>${x}</td>`
-                        } else return `<td ${base.getFullYear()==year && base.getMonth()==month && x==date?'class="text-subpoint"':''}>${x}</td>`;
+                            return `</tr><tr><td ${x==date?'class="text-subpoint position-relative"':''}>${x} <sup>${tasks?tasks.length>0?tasks.length:'':''}</sup></td>`
+                        } else return `<td ${base.getFullYear()==year && base.getMonth()==month && x==date?'class="text-subpoint position-relative"':''}>${x} <sup>${tasks?tasks.length>0?tasks.length:'':''}</sup></td>`;
                     }).join('')}
             </tbody>
         </table>`;
@@ -72,12 +79,12 @@ const detail = {
                             <td>24</td>
                         </tr>
                     </thead>
-                    ${task==null||task.length==0?'<tr><td colspan="24">등록된 일정이 없습니다.</td></tr>':task.map(t=>`<tr>${t.start!==0?`<td colspan="${t.start}"></td>`:''}<td type="scd" colspan="${t.end}"><span idx="${t.id}">${t.text}</span> <span class="text-danger" id="taskDel">&times</span></td>${24-parseInt(t.start)-parseInt(t.end)!=0?`<td colspan="${24-parseInt(t.start)-parseInt(t.end)}"></td>`:''}</tr>`).join('')}
+                    ${task==null||task.length==0?'<tr><td colspan="24">등록된 일정이 없습니다.</td></tr>':task.map(t=>`<tr>${t.start-1!==0?`<td colspan="${t.start-1}"></td>`:''}<td type="scd" colspan="${t.end}" ${t.done==true?`class="done"`:''}><span idx="${t.id}">${t.text}</span> <span class="text-danger" id="taskDel">&times</span></td>${24-parseInt(t.start)-parseInt(t.end)+1>0?`<td colspan="${24-parseInt(t.start)-parseInt(t.end)+1}"></td>`:''}</tr>`).join('')}
                 </table>
             </div>
             <hr>
             <div>
-                <textarea id="todo" class="form-input my-2 fs-6"></textarea>
+                <textarea id="todo" class="form-input my-2 fs-6" placeholder="일정을 입력하고 시간을 설정해주세요."></textarea>
                 시작시간 <input class="form-input" type="number" min="1" max="24" id="start" value="1">
                 소요시간 <input class="form-input" type="number" min="1" max="24" id="end" value="1">
                 <button class="btn btn-info" id="create">추가</button>
@@ -106,14 +113,23 @@ const ArchiScheduler = (function(){
             window.addEventListener('click', this.logoutMember);
             window.addEventListener('click', this.createTask);
             window.addEventListener('click', this.taskDel);
+            window.addEventListener('click', this.doneHandler);
 
             window.addEventListener('click', this.renderDetail);
+        }
+
+        this.doneHandler = function(ev){
+            let target = ev.target;
+            if(target.getAttribute('type')!=='scd') return;
+
+            models.doneHandler(target, current);
         }
 
         this.taskDel = function(ev){
             let target = ev.target;
             if(target.id!='taskDel')return ;
-            models.taskDel(target);
+            let answer = confirm(`"${target.previousElementSibling.textContent}" 내용을 지우시겠습니까?`);
+            if(answer) models.taskDel(target);
         }
 
         this.createTask = function(ev){
@@ -170,7 +186,6 @@ const ArchiScheduler = (function(){
         this.deleteModal = function(ev){
             let target = ev.target;
             if(target.id !== 'delBtn') return;
-
             modal.remove();
         }
 
@@ -197,7 +212,7 @@ const ArchiScheduler = (function(){
 
         this.renderDetail = function(ev){
             let target = ev.target;
-            if(target.tagName !== 'TD' || !target.closest('[type="cal"]')) return;
+            if(target.tagName !== 'TD' || target.getAttribute('type')=='scd') return;
             models.renderDetail(target);
         }
         
@@ -223,6 +238,7 @@ const ArchiScheduler = (function(){
         let userData = null;
         let signed = null;
         let count = 1;
+        let currentDate = 0;
 
         let base = new Date();
         let year = base.getFullYear();
@@ -242,8 +258,9 @@ const ArchiScheduler = (function(){
             setTimeout(()=>inputYear.value = year);
             setTimeout(()=>inputMonth.value = month);
 
-            this.applyCalendar();
             this.connectApp();
+            this.applyCalendar();
+
             for(let user of userData){
                 if(user.sign){
                     signed = user;
@@ -258,12 +275,35 @@ const ArchiScheduler = (function(){
             }
         }
 
+        this.doneHandler = function(target, current){
+            // target.classList.toggle('done');
+            let task = target.querySelector('[idx]');
+            let idx = task.getAttribute('idx');
+            let txt = task.textContent;
+            for(let key of userData){
+                if(key.id == signed.id){
+                    for(let todo of key.task[year][month][current.textContent.split('-').pop()]){
+                        if(todo.id == idx && todo.text == txt){
+                            todo.done = !todo.done;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            this.applyCalendar();
+            this.setStorage();
+            this.getStorage();
+            views.renderDetail(year, month, currentDate, signed.task[year][month][currentDate]);
+        }
+
         this.nowHandler = function(ev){
             year = base.getFullYear();
             month = base.getMonth();
             inputYear.value = year;
             inputMonth.value = month;
             this.applyCalendar();
+            views.renderDetail(year, month, date, signed.task[year][month][date]);
         }
 
         this.prevHandler = function(ev){
@@ -292,13 +332,14 @@ const ArchiScheduler = (function(){
                 year = inputYear.value;
                 month = inputMonth.value;
             }
-            views.applyCalendar(base, year, month, date);
+            views.applyCalendar(base, year, month, date, signed);
         }
 
         this.renderDetail = function(td){
             let clickDate = parseInt(td.textContent);
             let isEmpty = false;
             let taskList = null;
+            currentDate = clickDate;
             for(let user of userData){
                 if(signed && user.id == signed.id){
                     for(let key in user.task){
@@ -335,7 +376,7 @@ const ArchiScheduler = (function(){
             if(!localStorage['userData']) localStorage['userData'] = JSON.stringify([]);
             userData = JSON.parse(localStorage['userData']);
             for(let user of userData){
-                if(signed && user.id == signed.id){
+                if(user.sign){
                     signed = user;
                     break;
                 }
@@ -350,13 +391,14 @@ const ArchiScheduler = (function(){
             let str = target.previousElementSibling;
             for(let user of userData){
                 if(user.id == signed.id){
-                    user.task[year][month][date] = user.task[year][month][date].filter(todo=>todo.text !== str.textContent && todo.idx !== str.getAttribute('idx'));
+                    user.task[year][month][currentDate] = user.task[year][month][currentDate].filter(todo=>todo.text !== str.textContent && todo.idx !== str.getAttribute('idx'));
                 }
             }
 
+            this.applyCalendar();
             this.setStorage();
             this.getStorage();
-            views.renderDetail(year, month, date, signed.task[year][month][date]);
+            views.renderDetail(year, month, currentDate, signed.task[year][month][currentDate]);
         }
 
         this.createTask = function(task, start, end){
@@ -365,20 +407,23 @@ const ArchiScheduler = (function(){
                 if(user.id == signed.id){
                     if(!user.task[year]) user.task[year] = {};
                     if(!user.task[year][month]) user.task[year][month] = {};
-                    if(!user.task[year][month][date]) user.task[year][month][date] = [];
-                    user.task[year][month][date].push({
+                    if(!user.task[year][month][currentDate]) user.task[year][month][currentDate] = [];
+                    user.task[year][month][currentDate].push({
                         id: count,
                         text: val,
                         start: start,
                         end: end,
+                        done: false,
                     });
-                    count = userData[userData.length-1].task[year][month][date]['id']+1;
+                    count = userData[userData.length-1].task[year][month][currentDate]['id']+1;
                     break;
                 }
             }
+
+            this.applyCalendar();
             this.setStorage();
             this.getStorage();
-            views.renderDetail(year, month, date, signed.task[year][month][date]);
+            views.renderDetail(year, month, currentDate, signed.task[year][month][currentDate]);
         }
 
         this.newMember = function(id, pw){
@@ -394,7 +439,6 @@ const ArchiScheduler = (function(){
             if(dup){
                 alert('이미 있는 아이디입니다.');
             } else {
-                console.log(1)
                 userData.push({
                     id: id,
                     password: [...this.Encrypto(pw)],
@@ -425,6 +469,7 @@ const ArchiScheduler = (function(){
                         document.getElementById('login').insertAdjacentHTML('beforebegin', `
                             <div id="outBundle"><span>${user.id} 접속 중 </span><button id="logout" class="btn btn-danger">logout</button></div>
                         `);
+                        this.applyCalendar();
                         break;
                     }
                 }
@@ -481,13 +526,13 @@ const ArchiScheduler = (function(){
 
         this.renderDetail = function (year, month, td, list){
             this.clearDetail();
-            document.getElementById('timeLine').insertAdjacentHTML('afterbegin', `<div id="current">${year}-${month}-${td}</div>`);
+            document.getElementById('timeLine').insertAdjacentHTML('afterbegin', `<div id="current" class="fs-3 fw-bold">${year}-${month+1}-${td}</div>`);
             document.getElementById('detail').insertAdjacentHTML('beforeend', parts.detail.render(year, month, td, list));
         }
 
-        this.applyCalendar = function(base, year, month, date){
+        this.applyCalendar = function(base, year, month, date, userData){
             calendarView.innerHTML = '';
-            calendarView.innerHTML += parts.calendar.render(base, year, month, date);
+            calendarView.innerHTML += parts.calendar.render(base, year, month, date, userData);
         }
 
         this.clearDetail = function(){
