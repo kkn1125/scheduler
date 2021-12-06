@@ -392,7 +392,7 @@ const ArchiScheduler = (function(){
             let str = target.previousElementSibling;
             for(let user of userData){
                 if(user.id == signed.id){
-                    user.task[year][month][currentDate] = user.task[year][month][currentDate].filter(todo=>todo.text !== str.textContent && todo.idx !== str.getAttribute('idx'));
+                    user.task[year][month][currentDate] = user.task[year][month][currentDate].filter(todo=>todo.text !== str.textContent || todo.id !== parseInt(str.getAttribute('idx')));
                 }
             }
 
@@ -412,7 +412,7 @@ const ArchiScheduler = (function(){
                     let len = user.task[year][month][currentDate].length-1;
 
                     if(len>=0) count = user.task[year][month][currentDate][len]['id']+1;
-                    console.log(count)
+                    
                     user.task[year][month][currentDate].push({
                         id: count,
                         text: val,
