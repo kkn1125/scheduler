@@ -35,8 +35,8 @@ const calendar = {
                         }
                         if(tasks) tasks = tasks.filter(todo=>!todo.done);
                         if(i%7==0){
-                            return `</tr><tr><td ${x==date?'class="text-subpoint position-relative"':''}>${x} <sup>${tasks?tasks.length>0?tasks.length:'':''}</sup></td>`
-                        } else return `<td ${base.getFullYear()==year && base.getMonth()==month && x==date?'class="text-subpoint position-relative"':''}>${x} <sup>${tasks?tasks.length>0?tasks.length:'':''}</sup></td>`;
+                            return `</tr><tr><td ${x==date?`class="text-subpoint position-relative"`:`${x!==''?'':`class="${x==''?'pe-none':''}"`}`}>${x} ${x!=''?`<sup>${tasks?tasks.length>0?tasks.length:'':''}</sup>`:''}</td>`
+                        } else return `<td ${base.getFullYear()==year && base.getMonth()==month && x==date?`class="text-subpoint position-relative"`:`${x!==''?'':`class="${x==''?'pe-none':''}"`}`}>${x} ${x!=''?`<sup>${tasks?tasks.length>0?tasks.length:'':''}</sup>`:''}</td>`;
                     }).join('')}
             </tbody>
         </table>`;
@@ -52,7 +52,7 @@ const detail = {
                 </div>
                 <table class="table fs-7">
                     <thead class="text-center">
-                        <tr>
+                        <tr class="pe-none">
                             <td>1</td>
                             <td>2</td>
                             <td>3</td>
@@ -79,7 +79,7 @@ const detail = {
                             <td>24</td>
                         </tr>
                     </thead>
-                    ${task==null||task.length==0?'<tr><td colspan="24">등록된 일정이 없습니다.</td></tr>':task.map(t=>`<tr>${t.start-1!==0?`<td colspan="${t.start-1}"></td>`:''}<td type="scd" colspan="${t.end}" ${t.done==true?`class="done"`:''}><span idx="${t.id}">${t.text}</span> <span class="text-danger" id="taskDel">&times</span></td>${24-parseInt(t.start)-parseInt(t.end)+1>0?`<td colspan="${24-parseInt(t.start)-parseInt(t.end)+1}"></td>`:''}</tr>`).join('')}
+                    ${task==null||task.length==0?'<tr><td colspan="24" class="pe-none">등록된 일정이 없습니다.</td></tr>':task.map(t=>`<tr>${t.start-1!==0?`<td class="pe-none" colspan="${t.start-1}"></td>`:''}<td type="scd" colspan="${t.end}" ${t.done==true?`class="done"`:''}><span idx="${t.id}">${t.text}</span> <span class="text-danger" id="taskDel">&times</span></td>${24-parseInt(t.start)-parseInt(t.end)+1>0?`<td class="pe-none" colspan="${24-parseInt(t.start)-parseInt(t.end)+1}"></td>`:''}</tr>`).join('')}
                 </table>
             </div>
             <hr>
@@ -213,6 +213,7 @@ const ArchiScheduler = (function(){
         this.renderDetail = function(ev){
             let target = ev.target;
             if(target.tagName !== 'TD' || target.getAttribute('type')=='scd') return;
+
             models.renderDetail(target);
         }
         
@@ -408,6 +409,10 @@ const ArchiScheduler = (function(){
                     if(!user.task[year]) user.task[year] = {};
                     if(!user.task[year][month]) user.task[year][month] = {};
                     if(!user.task[year][month][currentDate]) user.task[year][month][currentDate] = [];
+                    let len = user.task[year][month][currentDate].length-1;
+
+                    if(len>=0) count = user.task[year][month][currentDate][len]['id']+1;
+                    console.log(count)
                     user.task[year][month][currentDate].push({
                         id: count,
                         text: val,
@@ -415,7 +420,6 @@ const ArchiScheduler = (function(){
                         end: end,
                         done: false,
                     });
-                    count = userData[userData.length-1].task[year][month][currentDate]['id']+1;
                     break;
                 }
             }
